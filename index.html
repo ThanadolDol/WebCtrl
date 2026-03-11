@@ -292,7 +292,7 @@ input[type=range] {
 
   <div class="conn-row">
     <div class="ip-box">
-      <span>wss://</span>
+      <span>ws://</span>
       <input id="ip-input" value="192.168.1.100" placeholder="ESP32 IP" />
       <span>/ws</span>
     </div>
@@ -482,6 +482,16 @@ function toggleConnect() {
 }
 
 function startConnect(ip) {
+  // GitHub Pages (and any HTTPS page) cannot connect to ws:// — browser blocks it as mixed content.
+  // ESP32 doesn't support wss://, so the page must be served over HTTP (e.g. locally or via HTTP host).
+  if (window.location.protocol === "https:") {
+    addLog("⚠ Page is on HTTPS — browser blocks ws:// connections.", "error");
+    addLog("Open this page over HTTP (e.g. http://192.168.1.21) instead of GitHub Pages.", "warn");
+    addLog("Enabling demo mode instead…", "warn");
+    setSpinner(false);
+    startDemoMode();
+    return;
+  }
   setSpinner(true);
   addLog(`Connecting to ws://${ip}/ws …`, "info");
   try {
